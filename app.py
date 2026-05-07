@@ -302,7 +302,7 @@ def show_login():
                     st.rerun()
                 else:
                     st.markdown("<div class='login-error'>✗ Invalid credentials. Access denied.</div>", unsafe_allow_html=True)
-        st.markdown("<br>")
+    
         st.markdown("<center style='font-family:DM Mono,monospace;font-size:0.6rem;color:#333'>WABI SABI AGENCY · INTERNAL TOOL</center>", unsafe_allow_html=True)
 
 
