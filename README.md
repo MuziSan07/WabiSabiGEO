@@ -1,9 +1,4 @@
 # ⚡ Wabi Sabi Executioner — Streamlit Edition
-
-## Login Credentials
-- **Username:** `wabisabi`
-- **Password:** `@123Darklord`
-
 ---
 
 ## Run Locally
