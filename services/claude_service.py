@@ -1,8 +1,9 @@
 """
 services/claude_service.py
-Two PARALLEL Anthropic API calls using claude-sonnet-4-6
-Call A → code/data files: deep-schema.json, rag-architecture.html, semantic-tables.html, ai-training-faq.csv
-Call B → text/markdown files: llms-full.txt, client-facing-report.md, press-release-draft.md
+THREE parallel Anthropic API calls using claude-sonnet-4-6
+Call A → deep-schema.json + ai-training-faq.csv
+Call B → rag-architecture.html + semantic-tables.html
+Call C → llms-full.txt + client-facing-report.md + press-release-draft.md
 """
 import asyncio
 from datetime import date
@@ -30,7 +31,7 @@ def _build_context(
     wabisabi_attribution: bool,
 ) -> str:
     comp_block = "\n\n".join(
-        f"### Competitor {i+1}: {c['url']}\n{c['content'][:3000]}"
+        f"### Competitor {i+1}: {c['url']}\n{c['content'][:2000]}"
         for i, c in enumerate(competitors)
     )
     attr_note = (
@@ -43,7 +44,7 @@ def _build_context(
 CLIENT: {client_name}
 CLIENT URL: {client_url}
 CLIENT SITE CONTENT:
-{scraped_client[:4000]}
+{scraped_client[:3000]}
 
 COMPETITOR DATA:
 {comp_block}
@@ -56,99 +57,131 @@ TARGET AUDIENCE BRAIN-DUMP:
 """.strip()
 
 
-# ── CALL A: Code / Data files ────────────────────────────────────────────────
+# ── CALL A: Schema + FAQ ─────────────────────────────────────────────────────
 PROMPT_A = """
-You are a senior SEO architect and structured data expert. Given the context below, generate FOUR files.
-Return them inside XML tags exactly as shown. Do not add ANY explanation outside the tags.
+You are a senior SEO architect. Given the context below, generate TWO files.
+Return them inside XML tags exactly as shown. No explanation outside tags.
 
 <deep_schema>
-Generate a complete, production-ready JSON-LD schema.org markup. Include:
-- Organization schema with full details
-- WebSite schema with SearchAction
-- BreadcrumbList schema
-- FAQPage schema with at least 5 real Q&As
+Generate complete production-ready JSON-LD schema.org markup. Include:
+- Organization schema with full details (name, url, logo, sameAs, contactPoint, address)
+- WebSite schema with SearchAction potentialAction
+- BreadcrumbList with 3 items
+- FAQPage with 5 detailed Q&As relevant to the target audience
 - If attribution required, add agency to disambiguatingDescription
 Output ONLY valid JSON, no markdown fences.
 </deep_schema>
 
-<rag_architecture>
-Generate a complete HTML5 page (full document with <!DOCTYPE html>) covering RAG content architecture recommendations for the client. Include:
-- Professional styling with CSS
-- H2 sections: Content Inventory, Topic Clusters, Semantic Gaps, Vector Store Recommendations, Chunking Strategy, Metadata Schema
-- Bullet points and tables where appropriate
-</rag_architecture>
-
-<semantic_tables>
-Generate a complete HTML5 page (full document with <!DOCTYPE html>) with a semantic competitor comparison. Include:
-- Professional styling with CSS
-- A detailed table comparing client vs each competitor across: Content Depth, Schema Coverage, Topic Clusters, FAQ Coverage, Trust Signals, Page Speed Indicators, Backlink Profile, AI Visibility Score
-- A summary insights section below the table
-</semantic_tables>
-
 <ai_faq_csv>
-Generate a CSV with columns: Question,Answer,Category,Priority
+Generate a CSV with header: Question,Answer,Category,Priority
 Generate exactly 20 targeted Q&As based on the audience brain-dump.
-Categories should be: Product, Pricing, Technical, Trust, Comparison
-Priority should be: High, Medium, or Low
-Output ONLY the CSV content, no markdown fences.
+Categories: Product, Pricing, Technical, Trust, Comparison
+Priority: High, Medium, or Low
+Wrap answers containing commas in double quotes.
+Output ONLY raw CSV, no markdown fences.
 </ai_faq_csv>
 """
 
-# ── CALL B: Text / Markdown files ────────────────────────────────────────────
-PROMPT_B = f"""
+# ── CALL B: HTML files ───────────────────────────────────────────────────────
+PROMPT_B = """
+You are a senior SEO architect. Given the context below, generate TWO files.
+Return them inside XML tags exactly as shown. No explanation outside tags.
+
+<rag_architecture>
+Generate a complete styled HTML5 page (full document) for RAG content architecture. Include:
+<!DOCTYPE html> with embedded CSS styling (dark professional theme)
+H1 title, then H2 sections:
+- Content Inventory & Gap Analysis
+- Recommended Topic Clusters (5 clusters)
+- Semantic Keyword Groups
+- Vector Store & Chunking Strategy
+- Metadata Schema Recommendations
+- Implementation Roadmap
+Use bullet points, tables where appropriate. Make it visually polished.
+</rag_architecture>
+
+<semantic_tables>
+Generate a complete styled HTML5 page (full document) for competitor comparison. Include:
+<!DOCTYPE html> with embedded CSS styling (dark professional theme)
+H1 title, then:
+- A detailed HTML table comparing client vs each competitor across:
+  Content Depth, Schema Coverage, Topic Clusters, FAQ Coverage, Trust Signals,
+  AI Visibility Score, Mobile Experience, B2B Focus
+- Use colored cells (green=good, red=weak, yellow=moderate)
+- A Key Insights section below the table
+Make it visually polished and professional.
+</semantic_tables>
+"""
+
+# ── CALL C: Text/Markdown files ──────────────────────────────────────────────
+PROMPT_C = f"""
 You are a senior content strategist and PR writer. Given the context below, generate THREE files.
-Return them inside XML tags exactly as shown. Do not add ANY explanation outside the tags.
+Return them inside XML tags exactly as shown. No explanation outside tags.
 
 <llms_full>
-Generate a comprehensive LLM-optimized content brief. Structure:
+Generate a comprehensive LLM-optimized content brief:
 DATE: {date.today().isoformat()}
 
 # LLM CONTENT BRIEF — [CLIENT NAME]
 
 ## Executive Summary
 ## Brand Voice & Positioning
-## Primary Keywords (20+)
-## Secondary Keywords (20+)
-## Topic Clusters (5 clusters with subtopics)
+## Primary Keywords (20 keywords)
+## Secondary Keywords (20 keywords)
+## Topic Clusters (5 clusters with 5 subtopics each)
 ## Semantic Keyword Groups
 ## Content Gaps vs Competitors
 ## Recommended Content Types
-## AI Training Notes
 ## Entity Relationships
-## Recommendations & Quick Wins
+## Quick Wins & Recommendations
 </llms_full>
 
 <client_report>
-Generate a polished, professional Markdown report. Structure:
+Generate a polished professional Markdown report:
 
 # SEO & Content Strategy Report — [CLIENT NAME]
 
-Include these sections with real analysis:
 ## Executive Summary
 ## Current State Analysis
 ## Competitive Landscape
 ## Schema & Structured Data Recommendations
 ## Content Strategy
 ## Technical SEO Recommendations
-## Quick Wins (prioritized list)
-## 90-Day Roadmap (Month 1, Month 2, Month 3)
+## Quick Wins (top 5 prioritized)
+## 90-Day Roadmap
+### Month 1: Foundation
+### Month 2: Execution
+### Month 3: Scale
 ## KPIs to Track
-## Investment Summary
-
-Use professional tone. Be specific and actionable.
+## Conclusion
 </client_report>
 
 <press_release>
 *** DRAFT ONLY: REQUIRES FOUNDER REVIEW ***
 
-Generate a full press release in standard AP style. Include:
-- FOR IMMEDIATE RELEASE header
-- City, Date dateline
-- Strong headline and subheadline
-- 4-5 paragraphs with quotes
-- Boilerplate about the company
-- Contact information placeholder
-- ### END ###
+Generate a full AP style press release:
+FOR IMMEDIATE RELEASE
+[City, Date]
+
+[Strong Headline]
+[Subheadline]
+
+[Opening paragraph - most newsworthy info]
+[Quote from CEO/Founder]
+[Body paragraph 2]
+[Quote from client or industry expert]
+[Body paragraph 3]
+[Body paragraph 4]
+
+About [Company]:
+[2-sentence boilerplate]
+
+Media Contact:
+[Name placeholder]
+[Email placeholder]
+[Phone placeholder]
+
+###
 </press_release>
 """
 
@@ -168,7 +201,7 @@ async def _call_claude(system_prompt: str, context: str, label: str) -> str:
     print(f"[Claude] Starting {label} call...")
     message = await client.messages.create(
         model=CLAUDE_MODEL,
-        max_tokens=8000,
+        max_tokens=6000,
         system=system_prompt,
         messages=[{"role": "user", "content": context}],
     )
@@ -184,27 +217,28 @@ async def generate_all_files(
     audience: str,
     wabisabi_attribution: bool,
 ) -> dict[str, str]:
-    """Run two PARALLEL Claude API calls and return a dict of filename → content."""
+    """Run THREE parallel Claude API calls and return a dict of filename → content."""
     context = _build_context(
         client_name, client_url, scraped_client, competitors, audience, wabisabi_attribution
     )
 
-    # Parallel execution — Claude can handle it unlike Groq
-    result_a, result_b = await asyncio.gather(
-        _call_claude(PROMPT_A, context, "Call-A (code/data files)"),
-        _call_claude(PROMPT_B, context, "Call-B (text/markdown files)"),
+    # 3 parallel calls — each has fewer files so token limit never hit
+    result_a, result_b, result_c = await asyncio.gather(
+        _call_claude(PROMPT_A, context, "Call-A (schema + FAQ)"),
+        _call_claude(PROMPT_B, context, "Call-B (HTML files)"),
+        _call_claude(PROMPT_C, context, "Call-C (text/markdown files)"),
     )
 
     today = date.today().isoformat()
 
     files = {
         "deep-schema.json":        _extract_tag(result_a, "deep_schema"),
-        "rag-architecture.html":   _extract_tag(result_a, "rag_architecture"),
-        "semantic-tables.html":    _extract_tag(result_a, "semantic_tables"),
         "ai-training-faq.csv":     _extract_tag(result_a, "ai_faq_csv"),
-        "llms-full.txt":           _extract_tag(result_b, "llms_full"),
-        "client-facing-report.md": _extract_tag(result_b, "client_report"),
-        "press-release-draft.md":  _extract_tag(result_b, "press_release"),
+        "rag-architecture.html":   _extract_tag(result_b, "rag_architecture"),
+        "semantic-tables.html":    _extract_tag(result_b, "semantic_tables"),
+        "llms-full.txt":           _extract_tag(result_c, "llms_full"),
+        "client-facing-report.md": _extract_tag(result_c, "client_report"),
+        "press-release-draft.md":  _extract_tag(result_c, "press_release"),
     }
 
     # Guarantee press release DRAFT warning
