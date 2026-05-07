@@ -1,0 +1,28 @@
+# ─────────────────────────────────────────────
+#  Wabi Sabi Executioner — Streamlit Edition
+#  Python 3.11+ compatible
+# ─────────────────────────────────────────────
+
+# Streamlit
+streamlit==1.40.2
+
+# Env / Config
+python-dotenv==1.0.1
+
+# HTTP
+httpx==0.27.2
+requests==2.32.3
+
+# Google Sheets
+gspread==6.1.2
+google-auth==2.35.0
+google-auth-oauthlib==1.2.1
+
+# Async
+anyio==4.6.2
+
+# Firecrawl
+firecrawl-py==1.4.0
+
+# Anthropic (for when credits are added)
+anthropic==0.34.2
