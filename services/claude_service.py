@@ -8,12 +8,8 @@ import asyncio
 from datetime import date
 import anthropic
 import os
-from dotenv import load_dotenv
-from config import AGENCY_NAME
+from config import AGENCY_NAME, ANTHROPIC_API_KEY
 
-load_dotenv()
-
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 CLAUDE_MODEL = "claude-sonnet-4-6"
 
 client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
