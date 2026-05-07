@@ -455,9 +455,10 @@ def show_app():
                         competitors_data = asyncio.run(scrape_multiple(competitor_urls))
                         st.write(f"✅ {len(competitors_data)} competitor(s) scraped")
 
-                    # Step 3 & 4: Generate files via Groq
-                    st.write("🤖 Groq Call A — generating schema, tables, HTML, CSV...")
-                    st.write("🤖 Groq Call B — generating reports, press release, LLM brief...")
+                    # Step 3, 4, 5: Generate files via Claude (3 parallel calls)
+                    st.write("🤖 Claude Call A — schema + FAQ CSV...")
+                    st.write("🤖 Claude Call B — HTML architecture + competitor tables...")
+                    st.write("🤖 Claude Call C — reports, press release, LLM brief...")
                     files = asyncio.run(generate_all_files(
                         client_name=client_name,
                         client_url=client_url,
