@@ -284,7 +284,7 @@ if "zip_name" not in st.session_state:
 def show_login():
     st.markdown("""
     <div class='login-wrap'>
-        <div class='login-title'>WABI SABI</div>
+        <div class='login-title'>SPIKD</div>
         <div class='login-sub'>// Executioner v1.0 — Restricted Access</div>
     </div>
     """, unsafe_allow_html=True)
@@ -317,7 +317,7 @@ def show_app():
     st.markdown("""
     <div class='ws-header'>
         <div>
-            <span class='ws-logo'>WABI SABI</span>
+            <span class='ws-logo'>SPIKD</span>
             <span class='ws-badge'>EXECUTIONER v1.0</span>
         </div>
         <div class='ws-logout'>// AUTHENTICATED</div>
