@@ -456,8 +456,8 @@ def show_app():
                         st.write(f"✅ {len(competitors_data)} competitor(s) scraped")
 
                     # Step 3 & 4: Generate files via Groq
-                    st.write("🤖 Groq Call A — generating schema, tables, HTML, CSV...")
-                    st.write("🤖 Groq Call B — generating reports, press release, LLM brief...")
+                    st.write("🤖 Claude Call A — generating schema, tables, HTML, CSV...")
+                    st.write("🤖 Claude Call B — generating reports, press release, LLM brief...")
                     files = asyncio.run(generate_all_files(
                         client_name=client_name,
                         client_url=client_url,
