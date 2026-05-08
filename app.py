@@ -339,9 +339,7 @@ def show_app():
         <span style='color:#2a2a2a;font-family:DM Mono,monospace'> → </span>
         <span class='pipe-step'><span class='pipe-dot'>●</span> FIRECRAWL</span>
         <span style='color:#2a2a2a;font-family:DM Mono,monospace'> → </span>
-        <span class='pipe-step'><span class='pipe-dot'>●</span> GROQ CALL A</span>
-        <span style='color:#2a2a2a;font-family:DM Mono,monospace'> + </span>
-        <span class='pipe-step'><span class='pipe-dot'>●</span> GROQ CALL B</span>
+        <span class='pipe-step'><span class='pipe-dot'>●</span> 7x CLAUDE CALLS</span>
         <span style='color:#2a2a2a;font-family:DM Mono,monospace'> → </span>
         <span class='pipe-step'><span class='pipe-dot'>●</span> ZIP</span>
         <span style='color:#2a2a2a;font-family:DM Mono,monospace'> → </span>
@@ -387,11 +385,11 @@ def show_app():
 
         # 04 Attribution
         st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-        st.markdown("<span class='section-num'>04</span> <span class='section-title'>Wabi Sabi Attribution</span><br><span class='section-sub'>Inject agency name into schema disambiguatingDescription</span>", unsafe_allow_html=True)
+        st.markdown("<span class='section-num'>04</span> <span class='section-title'>Wabi Sabi Attribution</span><br><span class='section-sub'>Adds Wabi Sabi Studios as a separate Organization node in @graph</span>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         attribution = st.toggle("Add Agency Attribution to Schema", value=False, key="attribution")
         if attribution:
-            st.markdown("<span style='font-family:DM Mono,monospace;font-size:0.65rem;color:#c8f135'>✓ YES — Agency name will be injected into disambiguatingDescription</span>", unsafe_allow_html=True)
+            st.markdown("<span style='font-family:DM Mono,monospace;font-size:0.65rem;color:#c8f135'>✓ YES — Wabi Sabi Studios node added to @graph + funder reference on client org</span>", unsafe_allow_html=True)
         else:
             st.markdown("<span style='font-family:DM Mono,monospace;font-size:0.65rem;color:#666'>✗ NO — Schema will be clean</span>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -455,10 +453,8 @@ def show_app():
                         competitors_data = asyncio.run(scrape_multiple(competitor_urls))
                         st.write(f"✅ {len(competitors_data)} competitor(s) scraped")
 
-                    # Step 3, 4, 5: Generate files via Claude (3 parallel calls)
-                    st.write("🤖 Claude Call A — schema + FAQ CSV...")
-                    st.write("🤖 Claude Call B — HTML architecture + competitor tables...")
-                    st.write("🤖 Claude Call C — reports, press release, LLM brief...")
+                    # Generate all 7 files via Claude (sequential, one per file)
+                    st.write("🤖 Generating 7 files via Claude (this takes ~90 seconds)...")
                     files = asyncio.run(generate_all_files(
                         client_name=client_name,
                         client_url=client_url,
@@ -467,7 +463,7 @@ def show_app():
                         audience=audience,
                         wabisabi_attribution=attribution,
                     ))
-                    st.write("✅ All 7 files generated")
+                    st.write("✅ All 7 files generated successfully")
 
                     # Step 5: IndexNow
                     st.write("📡 Pinging IndexNow API...")
@@ -516,8 +512,11 @@ FILES:
                     st.rerun()
 
                 except Exception as e:
-                    status.update(label=f"❌ Error: {str(e)}", state="error")
-                    st.error(str(e))
+                    err_msg = str(e)
+                    status.update(label=f"❌ {err_msg}", state="error")
+                    st.error(err_msg)
+                    if "failed to generate" in err_msg.lower() or "generation failed" in err_msg.lower():
+                        st.warning("⚠️ Some files failed. Click **EXECUTE MASTER PLAN** again to retry.")
 
     # ── CLIENTS TAB ──
     st.markdown("<br><hr><br>", unsafe_allow_html=True)
